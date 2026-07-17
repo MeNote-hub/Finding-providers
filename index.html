@@ -136,7 +136,7 @@
             display: none;
         }
         
-        /* 💡 Modal Popup Styles */
+        /* Modal Popup Styles */
         .provider-link {
             color: #818cf8;
             font-weight: 600;
@@ -169,7 +169,7 @@
             border: 1px solid #334155;
             border-radius: 16px;
             width: 100%;
-            max-width: 650px;
+            max-width: 680px;
             max-height: 90vh;
             overflow-y: auto;
             padding: 28px;
@@ -228,15 +228,18 @@
             border: 1px solid #047857;
         }
         .maps-btn:hover { background: #047857; transform: translateY(-1px); }
+        
+        /* ป้ายชื่อบริการ Registration Group แบบใหม่ */
         .reg-tag {
             display: inline-block;
-            background: #0f172a;
-            color: #cbd5e1;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            margin: 3px 3px 0 0;
-            border: 1px solid #334155;
+            background: #1e1b4b;
+            color: #a5b4fc;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin: 4px 4px 0 0;
+            border: 1px solid #3730a3;
+            line-height: 1.4;
         }
     </style>
 </head>
@@ -311,7 +314,7 @@
     </div>
 </div>
 
-<!-- 💡 Modal Popup Layout -->
+<!-- Modal Popup Layout -->
 <div id="providerModal" class="modal-overlay">
     <div class="modal-card">
         <button class="modal-close" onclick="closeModal()" title="Close">✕</button>
@@ -320,6 +323,46 @@
 </div>
 
 <script>
+    // 💡 พจนานุกรมแปลรหัสตัวเลขเป็นชื่อเต็ม Registration Groups
+    const REG_GROUP_MAP = {
+        "1": "Accommodation / Tenancy Assistance",
+        "2": "Assistance Animals",
+        "3": "Assistance with daily life tasks in a group or shared living arrangement",
+        "4": "Assistance with travel/transport arrangements",
+        "5": "Daily Personal Activities",
+        "6": "Group and Centre Based Activities",
+        "7": "High Intensity Daily Personal Activities",
+        "8": "Household tasks",
+        "9": "Interpreting and translation",
+        "10": "Participation in community/social and civic activities",
+        "11": "Assistive equipment for recreation",
+        "12": "Assistive products for household tasks",
+        "13": "Assistance products for personal care and safety",
+        "14": "Communication and information equipment",
+        "15": "Customised Prosthetics",
+        "16": "Hearing Equipment",
+        "17": "Hearing Services",
+        "18": "Personal Mobility Equipment",
+        "19": "Specialised Hearing Services",
+        "20": "Vision Equipment",
+        "21": "Assistance in coordinating or managing life stages/transitions and supports",
+        "22": "Behaviour Support",
+        "23": "Community nursing care for high needs",
+        "24": "Development of daily living and life skills",
+        "25": "Early Intervention supports for early childhood",
+        "26": "Exercise Physiology and Physical Wellbeing activities",
+        "27": "Innovative Community Participation",
+        "28": "Specialised Driving Training",
+        "29": "Therapeutic Supports",
+        "30": "Home modification design and construction",
+        "31": "Specialist Disability Accommodation",
+        "32": "Vehicle Modifications",
+        "33": "Plan Management",
+        "34": "Support Coordination",
+        "35": "Assistance to access and/or maintain employment and/or education",
+        "36": "Specialised Supported Employment"
+    };
+
     let allData = [];
     let filteredData = [];
     let currentPage = 1;
@@ -439,7 +482,6 @@
             const isActive = row.Active === '1';
             const statusBadge = `<span class="badge ${isActive ? 'badge-active' : 'badge-inactive'}">${isActive ? 'Active' : 'Inactive'}</span>`;
             
-            // คำนวณ Index จริงใน Array filteredData เพื่อส่งเข้าฟังก์ชันเปิด Modal
             const actualIndex = start + index;
 
             tr.innerHTML = `
@@ -461,7 +503,6 @@
         tableBody.appendChild(fragment);
     }
 
-    // 💡 ฟังก์ชันเปิด Popup แสดงรายละเอียดและพิกัดแผนที่
     function openModal(index) {
         const row = filteredData[index];
         if (!row) return;
@@ -472,43 +513,44 @@
         const isActive = row.Active === '1';
         const statusBadge = `<span class="badge ${isActive ? 'badge-active' : 'badge-inactive'}">${isActive ? 'Active' : 'Inactive'}</span>`;
 
-        // จัดการพิกัด Google Maps
         let mapsLinkHtml = '';
         const lat = row.Latitude || row.latitude || '';
         const lng = row.Longitude || row.longitude || '';
         const fullAddress = `${row.Address || ''} ${row.Suburb || ''} ${row.State_cd || ''} ${row.Post_cd || ''}`.trim();
         
         if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
-            // ถ้ามีพิกัดตัวเลข ให้ปักหมุดพิกัดตรงๆ
             const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
             mapsLinkHtml = `<a href="${mapsUrl}" target="_blank" class="maps-btn">🗺️ Open in Google Maps (${lat}, ${lng}) ↗</a>`;
         } else if (fullAddress && fullAddress !== '-') {
-            // ถ้าไม่มีพิกัดตัวเลข ให้ใช้ข้อความที่อยู่ไปค้นหาใน Google Maps แทน
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
             mapsLinkHtml = `<a href="${mapsUrl}" target="_blank" class="maps-btn">🗺️ Search on Google Maps ↗</a>`;
         }
 
-        // จัดระเบียบเวลาเปิด-ปิด (แยกบรรทัดตามวัน)
         let opnhrsFormatted = row.opnhrs || '-';
         if (opnhrsFormatted !== '-' && opnhrsFormatted.length > 10) {
             opnhrsFormatted = opnhrsFormatted.replace(/(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/gi, '<br>• <b>$1</b>');
             if (opnhrsFormatted.startsWith('<br>')) opnhrsFormatted = opnhrsFormatted.substring(4);
         }
 
-        // ดึงข้อมูลกลุ่มการลงทะเบียน (Registration Groups)
+        // 💡 ระบบแปลรหัสตัวเลขเป็นชื่อบริการจริงตาม Dictionary
         let regGroups = [];
         Object.keys(row).forEach(key => {
             if (key.toLowerCase().includes('reggroup') || key.toLowerCase().includes('reg_group')) {
-                if (row[key] && row[key] !== '0' && row[key] !== '' && row[key] !== 'null') {
-                    regGroups.push(`${key}: ${row[key]}`);
+                const val = (row[key] || '').toString().trim();
+                if (val && val !== '0' && val !== 'null') {
+                    // ถ้ารหัสนั้นมีในพจนานุกรม ให้ใช้ชื่อเต็ม ถ้าไม่มีให้ใช้ตัวเลขเดิม
+                    const groupName = REG_GROUP_MAP[val] || `Group #${val}`;
+                    regGroups.push(groupName);
                 }
             }
         });
-        const regGroupHtml = regGroups.length > 0 
-            ? regGroups.map(g => `<span class="reg-tag">${g}</span>`).join('')
+        
+        // กรองตัวซ้ำ และสร้างเป็นป้ายแท็กสีม่วงอมฟ้า สวยงาม อ่านง่าย
+        const uniqueGroups = [...new Set(regGroups)];
+        const regGroupHtml = uniqueGroups.length > 0 
+            ? uniqueGroups.map(g => `<span class="reg-tag">✓ ${g}</span>`).join('')
             : (row.RegGroup || '-');
 
-        // วาดหน้าต่าง Modal สไตล์การ์ด
         content.innerHTML = `
             <div style="margin-bottom: 24px; border-bottom: 1px solid #334155; padding-bottom: 18px; padding-right: 30px;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
@@ -580,7 +622,7 @@
                     <div class="detail-icon">📋</div>
                     <div class="detail-text" style="width:100%;">
                         <div class="detail-label">Registration Groups</div>
-                        <div style="margin-top:6px;">${regGroupHtml}</div>
+                        <div style="margin-top:8px;">${regGroupHtml}</div>
                     </div>
                 </div>
             </div>
@@ -593,16 +635,14 @@
         `;
 
         modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // ป้องกันฉากหลังเลื่อน
+        document.body.style.overflow = 'hidden';
     }
 
-    // 💡 ฟังก์ชันปิด Modal
     function closeModal() {
         document.getElementById('providerModal').style.display = 'none';
         document.body.style.overflow = 'auto';
     }
 
-    // คลิกพื้นที่ว่างฉากหลังสีดำเพื่อปิด Modal ได้เช่นกัน
     window.addEventListener('click', (e) => {
         const modal = document.getElementById('providerModal');
         if (e.target === modal) {
