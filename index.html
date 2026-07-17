@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -143,59 +143,59 @@
     <header>
         <h1>🏥 NDIS Provider Directory</h1>
         <label class="upload-box" id="dropLabel">
-            📁 เลือกไฟล์ <b>result.csv</b> (หรือไฟล์จะโหลดอัตโนมัติหากอยู่โฟลเดอร์เดียวกัน)
+            📁 Select <b>result.csv</b> (Auto-loads if in the same directory)
             <input type="file" id="fileInput" accept=".csv">
         </label>
     </header>
 
     <div class="controls">
         <div class="control-group">
-            <label for="searchInput">🔍 ค้นหาทั่วไป (ชื่อ, เบอร์, อีเมล, อาชีพ)</label>
-            <input type="text" id="searchInput" placeholder="พิมพ์คำค้นหา...">
+            <label for="searchInput">🔍 Search (Name, Phone, Email, Profession)</label>
+            <input type="text" id="searchInput" placeholder="Type keyword to search...">
         </div>
         <div class="control-group">
-            <label for="stateFilter">📍 รัฐ / พื้นที่ (State)</label>
+            <label for="stateFilter">📍 State / Territory</label>
             <select id="stateFilter">
-                <option value="">ทั้งหมด (All States)</option>
+                <option value="">All States</option>
             </select>
         </div>
         <div class="control-group">
-            <label for="statusFilter">🟢 สถานะ (Active Status)</label>
+            <label for="statusFilter">🟢 Status</label>
             <select id="statusFilter">
-                <option value="">ทั้งหมด</option>
-                <option value="1">เปิดให้บริการ (Active)</option>
-                <option value="0">ปิด/ไม่ระบสถานะ</option>
+                <option value="">All Statuses</option>
+                <option value="1">Active</option>
+                <option value="0">Inactive / Unspecified</option>
             </select>
         </div>
         <div class="control-group">
-            <label for="pageSize">📄 จำนวนแสดงต่อหน้า</label>
+            <label for="pageSize">📄 Results per page</label>
             <select id="pageSize">
-                <option value="50">50 รายการ</option>
-                <option value="100">100 รายการ</option>
-                <option value="200">200 รายการ</option>
+                <option value="50">50 Rows</option>
+                <option value="100">100 Rows</option>
+                <option value="200">200 Rows</option>
             </select>
         </div>
     </div>
 
-    <div id="loading">⏳ กำลังอ่านข้อมูลและประมวลผล... กรุณารอสักครู่</div>
+    <div id="loading">⏳ Loading and processing data... Please wait</div>
 
     <div class="stats" id="statsBar" style="display: none;">
-        <div>แสดงผล: <b id="showingCount">0</b> จากทั้งหมด <b id="totalCount">0</b> รายการ</div>
-        <div id="pageInfo">หน้า 1 / 1</div>
+        <div>Showing: <b id="showingCount">0</b> of <b id="totalCount">0</b> providers</div>
+        <div id="pageInfo">Page 1 / 1</div>
     </div>
 
     <div class="table-container" id="tableWrapper" style="display: none;">
         <table>
             <thead>
                 <tr>
-                    <th>สถานะ</th>
-                    <th>ชื่อผู้ให้บริการ (Prov_N)</th>
-                    <th>รัฐ (State)</th>
-                    <th>เบอร์โทร (Phone)</th>
-                    <th>อีเมล (Email)</th>
-                    <th>เว็บไซต์ (Website)</th>
-                    <th>อาชีพ / บริการ (prfsn)</th>
-                    <th>ที่อยู่ (Address)</th>
+                    <th>Status</th>
+                    <th>Provider Name (Prov_N)</th>
+                    <th>State</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Website</th>
+                    <th>Profession / Service (prfsn)</th>
+                    <th>Address</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -203,8 +203,8 @@
     </div>
 
     <div class="pagination" id="pagination" style="display: none;">
-        <button class="btn" id="prevBtn" disabled>◀ ก่อนหน้า</button>
-        <button class="btn" id="nextBtn" disabled>ถัดไป ▶</button>
+        <button class="btn" id="prevBtn" disabled>◀ Previous</button>
+        <button class="btn" id="nextBtn" disabled>Next ▶</button>
     </div>
 </div>
 
@@ -225,7 +225,6 @@
     const statsBar = document.getElementById('statsBar');
     const pagination = document.getElementById('pagination');
 
-    // 1. ลองโหลดไฟล์ result.csv อัตโนมัติเมื่อเปิดเว็บ
     window.addEventListener('DOMContentLoaded', () => {
         loadAutoCSV();
     });
@@ -242,12 +241,11 @@
             error: function() {
                 loading.style.display = 'none';
                 document.getElementById('dropLabel').style.borderColor = '#f87171';
-                document.getElementById('dropLabel').innerHTML = '⚠️ ไม่พบไฟล์ <b>result.csv</b> อัตโนมัติ กรุณาคลิกเพื่อเลือกไฟล์เอง';
+                document.getElementById('dropLabel').innerHTML = '⚠️ Auto-load failed for <b>result.csv</b>. Click here to select manually.';
             }
         });
     }
 
-    // 2. รองรับการกดเลือกไฟล์เองกรณีเปิดแบบ Local File (file://) แล้วเบราว์เซอร์บล็อก
     fileInput.addEventListener('change', (e) => {
         if (!e.target.files.length) return;
         loading.style.display = 'block';
@@ -269,9 +267,8 @@
         statsBar.style.display = 'flex';
         pagination.style.display = 'flex';
 
-        // ดึงรายการรัฐทั้งหมดมาใส่ Dropdown อัตโนมัติ
         const states = [...new Set(allData.map(d => (d.State_cd || '').trim()).filter(Boolean))].sort();
-        stateFilter.innerHTML = '<option value="">ทั้งหมด (All States)</option>';
+        stateFilter.innerHTML = '<option value="">All States</option>';
         states.forEach(state => {
             const opt = document.createElement('option');
             opt.value = state;
@@ -282,18 +279,14 @@
         applyFilters();
     }
 
-    // 3. ฟังก์ชันกรองข้อมูล
     function applyFilters() {
         const query = searchInput.value.toLowerCase().trim();
         const state = stateFilter.value;
         const status = statusFilter.value;
 
         filteredData = allData.filter(row => {
-            // กรองสถานะ
             if (status !== '' && row.Active !== status) return false;
-            // กรองรัฐ
             if (state !== '' && (row.State_cd || '').trim() !== state) return false;
-            // กรองคำค้นหาทั่วไป
             if (query !== '') {
                 const searchString = `${row.Prov_N || ''} ${row.Phone || ''} ${row.Email || ''} ${row.prfsn || ''} ${row.Post_cd || ''}`.toLowerCase();
                 if (!searchString.includes(query)) return false;
@@ -305,7 +298,6 @@
         renderTable();
     }
 
-    // 4. ฟังก์ชันแสดงผลตาราง
     function renderTable() {
         tableBody.innerHTML = '';
         pageSize = parseInt(pageSizeSelect.value);
@@ -313,26 +305,22 @@
         const total = filteredData.length;
         const totalPages = Math.ceil(total / pageSize) || 1;
         
-        // กำหนดขอบเขตหน้า
         const start = (currentPage - 1) * pageSize;
         const end = Math.min(start + pageSize, total);
         const pageData = filteredData.slice(start, end);
 
-        // อัปเดตตัวเลขสถิติ
         document.getElementById('totalCount').textContent = total.toLocaleString();
         document.getElementById('showingCount').textContent = total === 0 ? '0' : `${start + 1} - ${end}`;
-        document.getElementById('pageInfo').textContent = `หน้า ${currentPage} / ${totalPages}`;
+        document.getElementById('pageInfo').textContent = `Page ${currentPage} / ${totalPages}`;
 
-        // จัดการสถานะปุ่มเปลี่ยนหน้า
         document.getElementById('prevBtn').disabled = currentPage <= 1;
         document.getElementById('nextBtn').disabled = currentPage >= totalPages;
 
         if (total === 0) {
-            tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">❌ ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">❌ No matching providers found.</td></tr>';
             return;
         }
 
-        // วาดตาราง
         const fragment = document.createDocumentFragment();
         pageData.forEach(row => {
             const tr = document.createElement('tr');
@@ -346,7 +334,7 @@
                 <td><b style="color:#818cf8;">${row.State_cd || '-'}</b> (${row.Post_cd || ''})</td>
                 <td>${row.Phone || '-'}</td>
                 <td><a href="mailto:${row.Email}" style="color:#38bdf8; text-decoration:none;">${row.Email || '-'}</a></td>
-                <td>${row.Website ? `<a href="${row.Website.startsWith('http') ? row.Website : 'http://'+row.Website}" target="_blank" style="color:#34d399;">เยี่ยมชมเว็บ ↗</a>` : '-'}</td>
+                <td>${row.Website ? `<a href="${row.Website.startsWith('http') ? row.Website : 'http://'+row.Website}" target="_blank" style="color:#34d399;">Visit Website ↗</a>` : '-'}</td>
                 <td title="${row.prfsn || ''}">${row.prfsn || '-'}</td>
                 <td title="${row.Address || ''}">${row.Address || '-'}</td>
             `;
@@ -355,11 +343,10 @@
         tableBody.appendChild(fragment);
     }
 
-    // 5. Event Listeners สำหรับการค้นหาและเปลี่ยนหน้า
     let searchTimeout;
     searchInput.addEventListener('input', () => {
         clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(applyFilters, 300); // หน่วงเวลาพิมพ์ 300ms ไม่ให้กระตุก
+        searchTimeout = setTimeout(applyFilters, 300);
     });
     stateFilter.addEventListener('change', applyFilters);
     statusFilter.addEventListener('change', applyFilters);
